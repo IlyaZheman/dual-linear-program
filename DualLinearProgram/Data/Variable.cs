@@ -2,6 +2,6 @@
 
 public class Variable
 {
-    public string Coefficient { get; set; }
-    public string VariableIndex { get; set; }
+    public int Coefficient { get; set; }
+    public int VariableIndex { get; set; }
 }

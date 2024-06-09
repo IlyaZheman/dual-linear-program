@@ -15,9 +15,12 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Text="{Binding Coefficient}" Width="30" />
+                            <TextBox Text="{Binding Coefficient}"
+                                     Width="30" />
                             <TextBlock Text="x" />
-                            <TextBlock Text="{Binding VariableIndex}" FontSize="10" VerticalAlignment="Top" />
+                            <TextBlock Text="{Binding VariableIndex}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center" />
                             <TextBlock Text="+" />
                         </StackPanel>
                     </DataTemplate>
@@ -26,12 +29,45 @@
 
             <TextBlock Text="->" />
 
-            <ComboBox ItemsSource="{Binding OptimizationSigns}" SelectedItem="{Binding SelectedOptimizationSign}"
+            <ComboBox ItemsSource="{Binding OptimizationSigns}"
+                      SelectedItem="{Binding SelectedOptimizationSign}"
                       Width="50" />
         </StackPanel>
     </DataTemplate>
 
-    <DataTemplate x:Key="EquationTemplate">
+    <DataTemplate x:Key="DualFunctionTemplate">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="z(y) = " />
+
+            <ItemsControl ItemsSource="{Binding Variables}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Coefficient}" />
+                            <TextBlock Text="y" />
+                            <TextBlock Text="{Binding VariableIndex}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="+" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="->" />
+
+            <TextBlock Text="{Binding SelectedOptimizationSign}"
+                       Width="50" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="MainConstraintTemplate">
         <StackPanel Orientation="Horizontal">
             <ItemsControl ItemsSource="{Binding Variables}">
                 <ItemsControl.ItemsPanel>
@@ -43,9 +79,13 @@
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <StackPanel Orientation="Horizontal">
-                            <TextBox Text="{Binding Coefficient}" Width="30" />
+                            <TextBox Text="{Binding Coefficient}"
+                                     Width="30" />
+
                             <TextBlock Text="x" />
-                            <TextBlock Text="{Binding VariableIndex}" FontSize="10" VerticalAlignment="Top" />
+                            <TextBlock Text="{Binding VariableIndex}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center" />
                             <TextBlock Text="+" />
                         </StackPanel>
                     </DataTemplate>
@@ -57,6 +97,36 @@
                       Width="50" />
 
             <TextBox Text="{Binding Constant}" Width="30" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DualConstraintTemplate">
+        <StackPanel Orientation="Horizontal">
+            <ItemsControl ItemsSource="{Binding Variables}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal" />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Coefficient}" />
+
+                            <TextBlock Text="y" />
+                            <TextBlock Text="{Binding VariableIndex}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center" />
+                            <TextBlock Text="+" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <TextBlock Text="{Binding SelectedInequalitySign}" />
+
+            <TextBlock Text="{Binding Constant}" />
         </StackPanel>
     </DataTemplate>
 </ResourceDictionary>

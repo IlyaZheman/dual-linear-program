@@ -2,24 +2,75 @@
 using System.Windows.Input;
 using DualLinearProgram.Command;
 using DualLinearProgram.Data;
+using DualLinearProgram.Extensions;
+using DualLinearProgram.Logic;
 
 namespace DualLinearProgram.ViewModel;
 
-public class MainViewModel
+public class MainViewModel : ViewModel
 {
-    public MainFunction MainFunction { get; set; }
-    public ObservableCollection<Constraint> Constraints { get; set; }
-
     public ICommand AddConstraintCommand { get; }
     public ICommand RemoveConstraintCommand { get; }
     public ICommand AddVariableCommand { get; }
     public ICommand RemoveVariableCommand { get; }
     public ICommand SolveCommand { get; }
 
+    public const int InitialVariableCount = 2;
+    public const int InitialConstraintsCount = 2;
+
+    private MainFunction _mainFunction;
+    private MainFunction _dualFunction;
+
+    private ObservableCollection<Constraint> _mainConstraints;
+    private ObservableCollection<Constraint> _dualConstraints;
+
+    public MainFunction MainFunction
+    {
+        get => _mainFunction;
+        set
+        {
+            _mainFunction = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<Constraint> MainConstraints
+    {
+        get => _mainConstraints;
+        set
+        {
+            _mainConstraints = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public MainFunction DualFunction
+    {
+        get => _dualFunction;
+        set
+        {
+            _dualFunction = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<Constraint> DualConstraints
+    {
+        get => _dualConstraints;
+        set
+        {
+            _dualConstraints = value;
+            OnPropertyChanged();
+        }
+    }
+
     public MainViewModel()
     {
-        MainFunction = new MainFunction();
-        Constraints = new ObservableCollection<Constraint>();
+        MainFunction = new MainFunction(InitialVariableCount);
+        MainConstraints = new ObservableCollection<Constraint>().Init(InitialConstraintsCount, InitialVariableCount);
+
+        DualFunction = new MainFunction();
+        DualConstraints = new ObservableCollection<Constraint>();
 
         AddConstraintCommand = new RelayCommand(AddConstraint);
         RemoveConstraintCommand = new RelayCommand(RemoveConstraint);
@@ -34,7 +85,7 @@ public class MainViewModel
     {
         MainFunction.AddVariable();
 
-        foreach (var constraint in Constraints)
+        foreach (var constraint in MainConstraints)
         {
             constraint.AddVariable();
         }
@@ -44,7 +95,7 @@ public class MainViewModel
     {
         MainFunction.RemoveVariable();
 
-        foreach (var constraint in Constraints)
+        foreach (var constraint in MainConstraints)
         {
             constraint.RemoveVariable();
         }
@@ -52,29 +103,33 @@ public class MainViewModel
 
     private void AddConstraint(object parameter)
     {
-        Constraints.Add(new Constraint(MainFunction.GetVariableCount()));
+        MainConstraints.Add(new Constraint(MainFunction.GetVariableCount()));
     }
 
     private void RemoveConstraint(object parameter)
     {
-        if (Constraints.Count > 0)
+        if (MainConstraints.Count > 0)
         {
-            Constraints.RemoveAt(Constraints.Count - 1);
+            MainConstraints.RemoveAt(MainConstraints.Count - 1);
         }
     }
 
     private void Solve(object parameter)
     {
-        var data = new double[Constraints.Count, Constraints.Max(eq => eq.Variables.Count) + 2];
-        for (var i = 0; i < Constraints.Count; i++)
-        {
-            for (var j = 0; j < Constraints[i].Variables.Count; j++)
-            {
-                data[i, j] = double.Parse(Constraints[i].Variables[j].Coefficient);
-            }
+        var helper = new CalculationHelper();
+        helper.SetMainFunction(MainFunction);
+        helper.SetConstraints(MainConstraints);
 
-            data[i, Constraints[i].Variables.Count] = Constraints[i].InequalitySigns.IndexOf(Constraints[i].SelectedInequalitySign);
-            data[i, Constraints[i].Variables.Count + 1] = double.Parse(Constraints[i].Constant);
+        var success = helper.CalculateDual(out var dualFunction, out var dualConstraints);
+        if (!success)
+        {
+            throw new Exception("Failed to calculate");
         }
+
+        DualFunction = dualFunction;
+        Console.WriteLine(DualFunction.Verbose());
+
+        DualConstraints = new ObservableCollection<Constraint>(dualConstraints);
+        Console.WriteLine(DualConstraints.Verbose());
     }
 }
