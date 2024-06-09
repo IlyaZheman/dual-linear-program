@@ -8,87 +8,73 @@ namespace DualLinearProgram.ViewModel;
 public class MainViewModel
 {
     public MainFunction MainFunction { get; set; }
-    public ObservableCollection<Constraint> Equations { get; set; }
+    public ObservableCollection<Constraint> Constraints { get; set; }
 
-    public ICommand AddEquationCommand { get; }
-    public ICommand RemoveEquationCommand { get; }
+    public ICommand AddConstraintCommand { get; }
+    public ICommand RemoveConstraintCommand { get; }
     public ICommand AddVariableCommand { get; }
     public ICommand RemoveVariableCommand { get; }
-    public ICommand AddMainFunctionVariableCommand { get; }
-    public ICommand RemoveMainFunctionVariableCommand { get; }
     public ICommand SolveCommand { get; }
 
     public MainViewModel()
     {
         MainFunction = new MainFunction();
-        Equations = new ObservableCollection<Constraint>();
+        Constraints = new ObservableCollection<Constraint>();
 
-        AddEquationCommand = new RelayCommand(AddConstraint);
-        RemoveEquationCommand = new RelayCommand(RemoveConstraint);
+        AddConstraintCommand = new RelayCommand(AddConstraint);
+        RemoveConstraintCommand = new RelayCommand(RemoveConstraint);
 
         AddVariableCommand = new RelayCommand(AddVariable);
         RemoveVariableCommand = new RelayCommand(RemoveVariable);
 
-        AddMainFunctionVariableCommand = new RelayCommand(AddMainFunctionVariable);
-        RemoveMainFunctionVariableCommand = new RelayCommand(RemoveMainFunctionVariable);
-
         SolveCommand = new RelayCommand(Solve);
     }
 
-    private void AddMainFunctionVariable(object parameter)
+    private void AddVariable(object parameter)
     {
-        MainFunction.Variables.Add(new Variable
+        MainFunction.AddVariable();
+
+        foreach (var constraint in Constraints)
         {
-            Coefficient = "0",
-            VariableIndex = (MainFunction.Variables.Count + 1).ToString()
-        });
+            constraint.AddVariable();
+        }
     }
 
-    private void RemoveMainFunctionVariable(object parameter)
+    private void RemoveVariable(object parameter)
     {
-        if (MainFunction.Variables.Count > 0)
+        MainFunction.RemoveVariable();
+
+        foreach (var constraint in Constraints)
         {
-            MainFunction.Variables.RemoveAt(MainFunction.Variables.Count - 1);
+            constraint.RemoveVariable();
         }
     }
 
     private void AddConstraint(object parameter)
     {
-        Equations.Add(new Constraint());
+        Constraints.Add(new Constraint(MainFunction.GetVariableCount()));
     }
 
     private void RemoveConstraint(object parameter)
     {
-        if (Equations.Count > 0)
+        if (Constraints.Count > 0)
         {
-            Equations.RemoveAt(Equations.Count - 1);
+            Constraints.RemoveAt(Constraints.Count - 1);
         }
-    }
-
-    private void AddVariable(object parameter)
-    {
-        var equation = parameter as Constraint;
-        equation?.AddVariable();
-    }
-
-    private void RemoveVariable(object parameter)
-    {
-        var equation = parameter as Constraint;
-        equation?.RemoveVariable();
     }
 
     private void Solve(object parameter)
     {
-        var data = new double[Equations.Count, Equations.Max(eq => eq.Variables.Count) + 2];
-        for (var i = 0; i < Equations.Count; i++)
+        var data = new double[Constraints.Count, Constraints.Max(eq => eq.Variables.Count) + 2];
+        for (var i = 0; i < Constraints.Count; i++)
         {
-            for (var j = 0; j < Equations[i].Variables.Count; j++)
+            for (var j = 0; j < Constraints[i].Variables.Count; j++)
             {
-                data[i, j] = double.Parse(Equations[i].Variables[j].Coefficient);
+                data[i, j] = double.Parse(Constraints[i].Variables[j].Coefficient);
             }
 
-            data[i, Equations[i].Variables.Count] = Equations[i].InequalitySigns.IndexOf(Equations[i].SelectedInequalitySign);
-            data[i, Equations[i].Variables.Count + 1] = double.Parse(Equations[i].Constant);
+            data[i, Constraints[i].Variables.Count] = Constraints[i].InequalitySigns.IndexOf(Constraints[i].SelectedInequalitySign);
+            data[i, Constraints[i].Variables.Count + 1] = double.Parse(Constraints[i].Constant);
         }
     }
 }

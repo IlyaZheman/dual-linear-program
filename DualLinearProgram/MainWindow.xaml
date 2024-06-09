@@ -12,13 +12,21 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Window.Resources>
+
     <StackPanel>
-        <ContentControl Content="{Binding MainFunction}" ContentTemplate="{StaticResource MainFunctionTemplate}" />
-        <ItemsControl ItemsSource="{Binding Equations}" ItemTemplate="{StaticResource EquationTemplate}" />
         <StackPanel Orientation="Horizontal">
-            <Button Content="Add Constraint" Command="{Binding AddEquationCommand}" />
-            <Button Content="Remove Constraint" Command="{Binding RemoveEquationCommand}" />
-            <Button Content="Solve" Command="{Binding SolveCommand}" />
+            <Button Content="Add Constraint" Command="{Binding AddVariableCommand}" />
+            <Button Content="Remove Constraint" Command="{Binding RemoveVariableCommand}" />
         </StackPanel>
+
+        <ContentControl Content="{Binding MainFunction}" ContentTemplate="{StaticResource MainFunctionTemplate}" />
+        <ItemsControl ItemsSource="{Binding Constraints}" ItemTemplate="{StaticResource EquationTemplate}" />
+
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Add Constraint" Command="{Binding AddConstraintCommand}" />
+            <Button Content="Remove Constraint" Command="{Binding RemoveConstraintCommand}" />
+        </StackPanel>
+
+        <Button Content="Solve" Command="{Binding SolveCommand}" />
     </StackPanel>
 </Window>

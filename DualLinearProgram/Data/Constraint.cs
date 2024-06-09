@@ -9,9 +9,10 @@ public class Constraint
     public string SelectedInequalitySign { get; set; }
     public string Constant { get; set; }
 
-    public Constraint()
+    public Constraint(int variableCount = 0)
     {
         Variables = new ObservableCollection<Variable>();
+        UpdateVariablesCount(variableCount);
         InequalitySigns = new ObservableCollection<string> { "<=", ">=", "=" };
         SelectedInequalitySign = "<=";
         Constant = "0";
@@ -31,6 +32,21 @@ public class Constraint
         if (Variables.Count > 0)
         {
             Variables.RemoveAt(Variables.Count - 1);
+        }
+    }
+
+    private void UpdateVariablesCount(int count)
+    {
+        var difference = count - Variables.Count;
+        if (difference > 0)
+        {
+            for (var i = 0; i < difference; i++)
+                AddVariable();
+        }
+        else if (difference < 0)
+        {
+            for (var i = 0; i < -difference; i++)
+                RemoveVariable();
         }
     }
 }
