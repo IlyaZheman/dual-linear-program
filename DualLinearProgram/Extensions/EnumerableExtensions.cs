@@ -9,4 +9,9 @@ public static partial class Extensions
             action(element);
         }
     }
+
+    public static bool IsNullOrEmpty<T>(this IEnumerable<T> items)
+    {
+        return items == null || !items.Any();
+    }
 }

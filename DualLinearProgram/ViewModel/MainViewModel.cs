@@ -19,10 +19,12 @@ public class MainViewModel : ViewModel
     public const int InitialConstraintsCount = 2;
 
     private MainFunction _mainFunction;
-    private MainFunction _dualFunction;
-
     private ObservableCollection<Constraint> _mainConstraints;
+    private ObservableCollection<Condition> _mainConditions;
+
+    private MainFunction _dualFunction;
     private ObservableCollection<Constraint> _dualConstraints;
+    private ObservableCollection<Condition> _dualConditions;
 
     public MainFunction MainFunction
     {
@@ -64,13 +66,35 @@ public class MainViewModel : ViewModel
         }
     }
 
+    public ObservableCollection<Condition> MainConditions
+    {
+        get => _mainConditions;
+        set
+        {
+            _mainConditions = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public ObservableCollection<Condition> DualConditions
+    {
+        get => _dualConditions;
+        set
+        {
+            _dualConditions = value;
+            OnPropertyChanged();
+        }
+    }
+
     public MainViewModel()
     {
         MainFunction = new MainFunction(InitialVariableCount);
         MainConstraints = new ObservableCollection<Constraint>().Init(InitialConstraintsCount, InitialVariableCount);
+        MainConditions = new ObservableCollection<Condition>().Init(InitialVariableCount, ">=");
 
         DualFunction = new MainFunction();
         DualConstraints = new ObservableCollection<Constraint>();
+        DualConditions = new ObservableCollection<Condition>();
 
         AddConstraintCommand = new RelayCommand(AddConstraint);
         RemoveConstraintCommand = new RelayCommand(RemoveConstraint);
@@ -89,6 +113,8 @@ public class MainViewModel : ViewModel
         {
             constraint.AddVariable();
         }
+
+        MainConditions.Add(new Condition(MainFunction.GetVariableCount(), ">=", 0));
     }
 
     private void RemoveVariable(object parameter)
@@ -98,6 +124,11 @@ public class MainViewModel : ViewModel
         foreach (var constraint in MainConstraints)
         {
             constraint.RemoveVariable();
+        }
+
+        if (MainConditions.Count > 0)
+        {
+            MainConditions.RemoveAt(MainFunction.GetVariableCount());
         }
     }
 
@@ -119,8 +150,9 @@ public class MainViewModel : ViewModel
         var helper = new CalculationHelper();
         helper.SetMainFunction(MainFunction);
         helper.SetConstraints(MainConstraints);
+        helper.SetConditions(MainConditions);
 
-        var success = helper.CalculateDual(out var dualFunction, out var dualConstraints);
+        var success = helper.CalculateDual(out var dualFunction, out var dualConstraints, out var dualConditions);
         if (!success)
         {
             throw new Exception("Failed to calculate");
@@ -131,5 +163,8 @@ public class MainViewModel : ViewModel
 
         DualConstraints = new ObservableCollection<Constraint>(dualConstraints);
         Console.WriteLine(DualConstraints.Verbose());
+
+        DualConditions = new ObservableCollection<Condition>(dualConditions);
+        Console.WriteLine(DualConditions.Verbose());
     }
 }

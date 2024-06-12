@@ -16,4 +16,17 @@ public static partial class Extensions
 
         return lst;
     }
+
+    public static T Init<T>(this T lst,
+        int initialVariableCount,
+        string inequalitySign)
+        where T : IList<Condition>
+    {
+        for (var i = 0; i < initialVariableCount; i++)
+        {
+            lst.Add(new Condition(i + 1, inequalitySign, 0));
+        }
+
+        return lst;
+    }
 }

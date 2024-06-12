@@ -129,4 +129,27 @@
             <TextBlock Text="{Binding Constant}" />
         </StackPanel>
     </DataTemplate>
+
+    <DataTemplate x:Key="MainConditionTemplate">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="x" 
+                       VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding VariableIndex}"
+                       FontSize="10"
+                       VerticalAlignment="Bottom" />
+            <TextBlock Text="{Binding InequalitySign}" />
+            <TextBlock Text="{Binding Constant}" />
+        </StackPanel>
+    </DataTemplate>
+
+    <DataTemplate x:Key="DualConditionTemplate">
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="y" />
+            <TextBlock Text="{Binding VariableIndex}"
+                       FontSize="10"
+                       VerticalAlignment="Bottom" />
+            <TextBlock Text="{Binding InequalitySign}" />
+            <TextBlock Text="{Binding Constant}" />
+        </StackPanel>
+    </DataTemplate>
 </ResourceDictionary>

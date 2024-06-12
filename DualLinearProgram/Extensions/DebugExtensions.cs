@@ -51,4 +51,21 @@ public static partial class Extensions
 
         return str.ToString();
     }
+
+    public static string Verbose(this IList<Condition> conditions)
+    {
+        var str = new StringBuilder();
+        for (var i = 0; i < conditions.Count; i++)
+        {
+            str.Append('y')
+                .Append(conditions[i].VariableIndex)
+                .Append(conditions[i].InequalitySign)
+                .Append(conditions[i].Constant);
+
+            if (i < conditions.Count - 1)
+                str.Append(',');
+        }
+
+        return str.ToString();
+    }
 }
