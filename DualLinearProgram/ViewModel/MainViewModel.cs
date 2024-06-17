@@ -33,6 +33,8 @@ public class MainViewModel : ViewModel
     private ObservableCollection<Constraint> _dualConstraints;
     private ObservableCollection<Condition> _dualConditions;
 
+    private double _result;
+
     public MainFunction MainFunction
     {
         get => _mainFunction;
@@ -89,6 +91,16 @@ public class MainViewModel : ViewModel
         set
         {
             _dualConditions = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double Result
+    {
+        get => _result;
+        set
+        {
+            _result = value;
             OnPropertyChanged();
         }
     }
@@ -177,8 +189,8 @@ public class MainViewModel : ViewModel
         DualConditions = new ObservableCollection<Condition>(dualConditions);
         Console.WriteLine(DualConditions.Verbose());
 
-        var result = new SimplexHelper().Process(DualFunction, DualConstraints.ToList());
-        Console.WriteLine(result);
+        Result = new SimplexHelper().Process(DualFunction, DualConstraints.ToList());
+        Console.WriteLine(Result);
     }
 
     private void SetDefaultMaxValue(object parameter)
