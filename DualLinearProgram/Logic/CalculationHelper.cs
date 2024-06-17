@@ -26,8 +26,8 @@ public class CalculationHelper
 
     public bool CalculateDual(
         out MainFunction dualFunction,
-        out IList<Constraint> constraints,
-        out IList<Condition> conditions)
+        out List<Constraint> constraints,
+        out List<Condition> conditions)
     {
         if (MainFunction == null || MainFunction.Equals(default(MainFunction)))
             throw new NullReferenceException($"{nameof(MainFunction)} is not set up");
@@ -36,10 +36,11 @@ public class CalculationHelper
         if (Conditions.IsNullOrEmpty())
             throw new NullReferenceException($"{nameof(Conditions)} is not set up");
 
+        Constraints = Extensions.Extensions.ReformConstraints(MainFunction, Constraints);
+
         dualFunction = CalculateDualFunction();
+        conditions = CalculateDualConditions(dualFunction.SelectedOptimizationSign);
         constraints = CalculateDualConstraints(dualFunction.SelectedOptimizationSign);
-        conditions = new List<Condition>();
-        // conditions = CalculateDualConditions();
 
         return true;
     }
@@ -63,27 +64,66 @@ public class CalculationHelper
         return dualFunction;
     }
 
-    private IList<Constraint> CalculateDualConstraints(string optimizationSign)
+    private List<Condition> CalculateDualConditions(string optimizationSign)
+    {
+        var conditions = new List<Condition>();
+
+        for (var i = 0; i < Constraints.Count; i++)
+        {
+            var constraint = Constraints[i];
+            var sign = constraint.SelectedInequalitySign;
+            if (optimizationSign == "min")
+            {
+                if (sign == "<=")
+                {
+                    conditions.Add(new Condition(i + 1, ">=", 0));
+                }
+            }
+            else if (optimizationSign == "max")
+            {
+                if (sign == ">=")
+                {
+                    conditions.Add(new Condition(i + 1, ">=", 0));
+                }
+            }
+        }
+
+        return conditions;
+    }
+
+    private List<Constraint> CalculateDualConstraints(string optimizationSign)
     {
         var constraints = new List<Constraint>();
 
         for (var i = 0; i < MainFunction.GetVariableCount(); i++)
         {
-            var constraint = CalculateDualConstraint(i, Constraints[i].SelectedInequalitySign, optimizationSign);
+            var constraint = CalculateDualConstraint(i, optimizationSign);
             constraints.Add(constraint);
         }
 
         return constraints;
     }
 
-    private Constraint CalculateDualConstraint(int variableIndex, string inequalitySign, string optimizationSign)
+    private Constraint CalculateDualConstraint(int variableIndex, string optimizationSign)
     {
         var constraint = new Constraint();
+
         foreach (var targetConstrain in Constraints)
         {
             var coefficient = targetConstrain.Variables[variableIndex].Coefficient;
             constraint.AddVariable(coefficient);
         }
+
+        if (optimizationSign == "min")
+        {
+            constraint.SelectedInequalitySign = ">=";
+        }
+        else if (optimizationSign == "max")
+        {
+            constraint.SelectedInequalitySign = "<=";
+        }
+
+        constraint.Constant = MainFunction.Variables[variableIndex].Coefficient;
 
         return constraint;
     }

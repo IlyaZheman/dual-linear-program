@@ -12,4 +12,10 @@ public class MainFunction : Equation
         OptimizationSigns = new ObservableCollection<string> { "min", "max" };
         SelectedOptimizationSign = "max";
     }
+    
+    public MainFunction(string optimizationSign) : base(0)
+    {
+        OptimizationSigns = new ObservableCollection<string> { "min", "max" };
+        SelectedOptimizationSign = optimizationSign;
+    }
 }

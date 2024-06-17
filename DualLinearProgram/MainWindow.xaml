@@ -62,13 +62,30 @@
                 </StackPanel>
             </StackPanel>
 
-            <Button Grid.Row="1"
-                    Content="Solve"
-                    Command="{Binding SolveCommand}"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Width="75"
-                    Margin="15" />
+            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="15">
+                <StackPanel Orientation="Horizontal">
+                    <Button Content="Default Max Value"
+                            Command="{Binding SetDefaultMaxValueCommand}"
+                            Margin="5" />
+                    <Button Content="Default Min Value"
+                            Command="{Binding SetDefaultMinValueCommand}"
+                            Margin="5" />
+                </StackPanel>
+
+                <Button Content="Solve"
+                        Command="{Binding SolveCommand}"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Width="75" />
+            </StackPanel>
+
+            <!-- <Button Grid.Row="1" -->
+            <!--         Content="Solve" -->
+            <!--         Command="{Binding SolveCommand}" -->
+            <!--         HorizontalAlignment="Center" -->
+            <!--         VerticalAlignment="Center" -->
+            <!--         Width="75" -->
+            <!--         Margin="15" /> -->
         </Grid>
 
         <GridSplitter Grid.Column="1"

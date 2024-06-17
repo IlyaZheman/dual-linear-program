@@ -29,4 +29,49 @@ public static partial class Extensions
 
         return lst;
     }
+    
+    public static IList<Constraint> ReformConstraints(MainFunction function, IList<Constraint> constraints)
+    {
+        foreach (var constraint in constraints)
+        {
+            if (function.SelectedOptimizationSign == "min")
+            {
+                if (constraint.SelectedInequalitySign == "<=")
+                {
+                    constraint.RevertConstraintSigns();
+                    constraint.SelectedInequalitySign = ">=";
+                }
+                // else if (constraint.SelectedInequalitySign == "=")
+                // {
+                //     constraint.SelectedInequalitySign = ">=";
+                // }
+            }
+            else if (function.SelectedOptimizationSign == "max")
+            {
+                if (constraint.SelectedInequalitySign == ">=")
+                {
+                    constraint.RevertConstraintSigns();
+                    constraint.SelectedInequalitySign = "<=";
+                }
+                // else if (constraint.SelectedInequalitySign == "=")
+                // {
+                //     constraint.SelectedInequalitySign = "<=";
+                // }
+            }
+        }
+
+        return constraints;
+    }
+
+    public static Constraint RevertConstraintSigns(this Constraint constraint)
+    {
+        foreach (var variable in constraint.Variables)
+        {
+            variable.Coefficient = -variable.Coefficient;
+        }
+
+        constraint.Constant = -constraint.Constant;
+
+        return constraint;
+    }
 }

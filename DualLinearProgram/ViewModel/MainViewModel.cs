@@ -11,9 +11,14 @@ public class MainViewModel : ViewModel
 {
     public ICommand AddConstraintCommand { get; }
     public ICommand RemoveConstraintCommand { get; }
+
     public ICommand AddVariableCommand { get; }
     public ICommand RemoveVariableCommand { get; }
+
     public ICommand SolveCommand { get; }
+
+    public ICommand SetDefaultMaxValueCommand { get; }
+    public ICommand SetDefaultMinValueCommand { get; }
 
     public const int InitialVariableCount = 2;
     public const int InitialConstraintsCount = 2;
@@ -103,6 +108,9 @@ public class MainViewModel : ViewModel
         RemoveVariableCommand = new RelayCommand(RemoveVariable);
 
         SolveCommand = new RelayCommand(Solve);
+
+        SetDefaultMaxValueCommand = new RelayCommand(SetDefaultMaxValue);
+        SetDefaultMinValueCommand = new RelayCommand(SetDefaultMinValue);
     }
 
     private void AddVariable(object parameter)
@@ -166,5 +174,65 @@ public class MainViewModel : ViewModel
 
         DualConditions = new ObservableCollection<Condition>(dualConditions);
         Console.WriteLine(DualConditions.Verbose());
+    }
+
+    private void SetDefaultMaxValue(object parameter)
+    {
+        MainFunction = new MainFunction();
+        MainConstraints = new ObservableCollection<Constraint>();
+
+        MainFunction.AddVariable(2);
+        MainFunction.AddVariable(1);
+        MainFunction.AddVariable(-3);
+        MainFunction.AddVariable(1);
+        MainFunction.SelectedOptimizationSign = "max";
+
+        var constraint1 = new Constraint();
+        constraint1.AddVariable(1);
+        constraint1.AddVariable(2);
+        constraint1.AddVariable(0);
+        constraint1.AddVariable(-1);
+        constraint1.SelectedInequalitySign = "<=";
+        constraint1.Constant = 4;
+        MainConstraints.Add(constraint1);
+
+        var constraint2 = new Constraint();
+        constraint2.AddVariable(1);
+        constraint2.AddVariable(-1);
+        constraint2.AddVariable(1);
+        constraint2.AddVariable(3);
+        constraint2.SelectedInequalitySign = "<=";
+        constraint2.Constant = 1;
+        MainConstraints.Add(constraint2);
+    }
+
+    private void SetDefaultMinValue(object parameter)
+    {
+        MainFunction = new MainFunction("min");
+        MainConstraints = new ObservableCollection<Constraint>();
+
+        MainFunction.AddVariable(2);
+        MainFunction.AddVariable(1);
+        MainFunction.AddVariable(-3);
+        MainFunction.AddVariable(1);
+        MainFunction.SelectedOptimizationSign = "min";
+
+        var constraint1 = new Constraint();
+        constraint1.AddVariable(-1);
+        constraint1.AddVariable(-2);
+        constraint1.AddVariable(0);
+        constraint1.AddVariable(1);
+        constraint1.SelectedInequalitySign = "<=";
+        constraint1.Constant = -4;
+        MainConstraints.Add(constraint1);
+
+        var constraint2 = new Constraint();
+        constraint2.AddVariable(1);
+        constraint2.AddVariable(-1);
+        constraint2.AddVariable(1);
+        constraint2.AddVariable(3);
+        constraint2.SelectedInequalitySign = ">=";
+        constraint2.Constant = 1;
+        MainConstraints.Add(constraint2);
     }
 }
