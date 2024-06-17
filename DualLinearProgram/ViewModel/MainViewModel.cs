@@ -4,6 +4,8 @@ using DualLinearProgram.Command;
 using DualLinearProgram.Data;
 using DualLinearProgram.Extensions;
 using DualLinearProgram.Logic;
+using DualLinearProgram.SimplexMethod;
+using Constraint = DualLinearProgram.Data.Constraint;
 
 namespace DualLinearProgram.ViewModel;
 
@@ -174,6 +176,9 @@ public class MainViewModel : ViewModel
 
         DualConditions = new ObservableCollection<Condition>(dualConditions);
         Console.WriteLine(DualConditions.Verbose());
+
+        var result = new SimplexHelper().Process(DualFunction, DualConstraints.ToList());
+        Console.WriteLine(result);
     }
 
     private void SetDefaultMaxValue(object parameter)
