@@ -4,7 +4,6 @@ using DualLinearProgram.Command;
 using DualLinearProgram.Data;
 using DualLinearProgram.Extensions;
 using DualLinearProgram.Logic;
-using DualLinearProgram.SimplexMethod;
 using Constraint = DualLinearProgram.Data.Constraint;
 
 namespace DualLinearProgram.ViewModel;
@@ -33,7 +32,7 @@ public class MainViewModel : ViewModel
     private ObservableCollection<Constraint> _dualConstraints;
     private ObservableCollection<Condition> _dualConditions;
 
-    private double _result;
+    private double _dualDualResult;
 
     public MainFunction MainFunction
     {
@@ -95,12 +94,12 @@ public class MainViewModel : ViewModel
         }
     }
 
-    public double Result
+    public double DualResult
     {
-        get => _result;
+        get => _dualDualResult;
         set
         {
-            _result = value;
+            _dualDualResult = value;
             OnPropertyChanged();
         }
     }
@@ -189,67 +188,24 @@ public class MainViewModel : ViewModel
         DualConditions = new ObservableCollection<Condition>(dualConditions);
         Console.WriteLine(DualConditions.Verbose());
 
-        Result = new SimplexHelper().Process(DualFunction, DualConstraints.ToList());
-        Console.WriteLine(Result);
+        var simplex = new SimplexHelper();
+        DualResult = simplex.CalculateResult(MainFunction, MainConstraints.ToList());
+        Console.WriteLine(DualResult);
     }
 
     private void SetDefaultMaxValue(object parameter)
     {
-        MainFunction = new MainFunction();
-        MainConstraints = new ObservableCollection<Constraint>();
+        var value = DefaultValues.GetDefaultMaxValue();
 
-        MainFunction.AddVariable(2);
-        MainFunction.AddVariable(1);
-        MainFunction.AddVariable(-3);
-        MainFunction.AddVariable(1);
-        MainFunction.SelectedOptimizationSign = "max";
-
-        var constraint1 = new Constraint();
-        constraint1.AddVariable(1);
-        constraint1.AddVariable(2);
-        constraint1.AddVariable(0);
-        constraint1.AddVariable(-1);
-        constraint1.SelectedInequalitySign = "<=";
-        constraint1.Constant = 4;
-        MainConstraints.Add(constraint1);
-
-        var constraint2 = new Constraint();
-        constraint2.AddVariable(1);
-        constraint2.AddVariable(-1);
-        constraint2.AddVariable(1);
-        constraint2.AddVariable(3);
-        constraint2.SelectedInequalitySign = "<=";
-        constraint2.Constant = 1;
-        MainConstraints.Add(constraint2);
+        MainFunction = value.Item1;
+        MainConstraints = value.Item2;
     }
 
     private void SetDefaultMinValue(object parameter)
     {
-        MainFunction = new MainFunction("min");
-        MainConstraints = new ObservableCollection<Constraint>();
+        var value = DefaultValues.GetDefaultMinValue();
 
-        MainFunction.AddVariable(2);
-        MainFunction.AddVariable(1);
-        MainFunction.AddVariable(-3);
-        MainFunction.AddVariable(1);
-        MainFunction.SelectedOptimizationSign = "min";
-
-        var constraint1 = new Constraint();
-        constraint1.AddVariable(-1);
-        constraint1.AddVariable(-2);
-        constraint1.AddVariable(0);
-        constraint1.AddVariable(1);
-        constraint1.SelectedInequalitySign = "<=";
-        constraint1.Constant = -4;
-        MainConstraints.Add(constraint1);
-
-        var constraint2 = new Constraint();
-        constraint2.AddVariable(1);
-        constraint2.AddVariable(-1);
-        constraint2.AddVariable(1);
-        constraint2.AddVariable(3);
-        constraint2.SelectedInequalitySign = ">=";
-        constraint2.Constant = 1;
-        MainConstraints.Add(constraint2);
+        MainFunction = value.Item1;
+        MainConstraints = value.Item2;
     }
 }

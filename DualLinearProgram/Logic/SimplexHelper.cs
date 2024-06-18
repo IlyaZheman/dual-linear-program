@@ -1,56 +1,219 @@
 ﻿using DualLinearProgram.Data;
 
-namespace DualLinearProgram.SimplexMethod;
+namespace DualLinearProgram.Logic;
 
 public class SimplexHelper
 {
-    public double Process(MainFunction mainFunction, List<Data.Constraint> mainConstraints)
+    private List<List<float>> table;
+    private string[] rowVariables; // all variables in a row
+    private string[] basicVariables; // contain basic variables
+
+    private bool problemType = false; // Problem Type
+
+    public float CalculateResult(MainFunction function, List<Constraint> constraints)
     {
-        var functionVariables = new double[mainFunction.Variables.Count];
-        for (var i = 0; i < mainFunction.Variables.Count; i++)
+        var n = function.GetVariableCount();
+        var m = constraints.Count;
+
+        problemType = function.SelectedOptimizationSign == "max";
+
+        table = new(new List<float>[m + 1]);
+        for (var i = 0; i < table.Count; i++)
         {
-            functionVariables[i] = mainFunction.Variables[i].Coefficient;
+            table[i] = new List<float>(new float[n + m + 2]);
         }
 
-        var c = 0;
+        table[0][0] = 1;
+        var targetFunction = new int[n];
 
-        var isExtrMax = mainFunction.SelectedOptimizationSign == "max";
-
-        var function = new Function(functionVariables, c, isExtrMax);
-
-        var constraints = new Constraint[mainConstraints.Count];
-        for (var i = 0; i < mainConstraints.Count; i++)
+        for (var i = 0; i < n; i++)
         {
-            var targetConstraint = mainConstraints[i];
+            targetFunction[i] = problemType ? function.Variables[i].Coefficient : -function.Variables[i].Coefficient;
+        }
 
-            var variables = new double[targetConstraint.Variables.Count];
-            var b = targetConstraint.Constant;
-            var sign = targetConstraint.SelectedInequalitySign;
-            for (var j = 0; j < targetConstraint.Variables.Count; j++)
+        for (var i = 0; i < targetFunction.Length; i++)
+        {
+            table[0][i + 1] = -targetFunction[i];
+        }
+
+        for (var j = 0; j < m; j++)
+        {
+            var constraint = constraints[j];
+
+            table[j + 1][0] = 0;
+
+            for (var i = 0; i < n; i++)
             {
-                variables[j] = targetConstraint.Variables[j].Coefficient;
+                table[j + 1][i + 1] = constraint.Variables[i].Coefficient;
             }
 
-            constraints[i] = new Constraint(variables, b, sign);
+            int choice = constraint.SelectedInequalitySign switch
+            {
+                "<=" => 1,
+                ">=" => 2,
+                "=" => 3,
+                _ => throw new Exception()
+            };
+
+            table[j + 1][n + j + 1] = choice switch
+            {
+                1 => 1,
+                2 => -1,
+                _ => 0
+            };
+
+            table[j + 1][table[0].Count - 1] = constraint.Constant;
+
+            if (constraint.Constant < 0)
+            {
+                // negative value...
+                for (var i = 0; i < table[0].Count; i++)
+                {
+                    table[j + 1][i] = -table[j + 1][i];
+                }
+            }
         }
 
-        var simplex = new Simplex(function, constraints);
+        FillVariables(n, m);
+        OptimizeTable();
 
-        var result = simplex.GetResult();
+        if (problemType)
+        {
+            Console.WriteLine("Значение целевой функции Zmax = " + table[0][table[0].Count - 1]);
+            return table[0][table[0].Count - 1];
+        }
+        else
+        {
+            Console.WriteLine("Значенеи целевой функции Zmin = " + -table[0][table[0].Count - 1]);
+            return -table[0][table[0].Count - 1];
+        }
+    }
 
-        return result.Item1.Last().fValue;
+    private void OptimizeTable()
+    {
+        while (IfMinExists())
+        {
+            var index = MinIndex();
 
-        // switch (result.Item2)
-        // {
-        //     case SimplexResult.Found:
-        //         string extrStr = isExtrMax ? "max" : "min";
-        //         return "The optimal solution is found: F" + extrStr + $" = {result.Item1.Last().fValue}";
-        //     case SimplexResult.Unbounded:
-        //         return "The domain of admissible solutions is unbounded";
-        //     case SimplexResult.NotYetFound:
-        //         return "Algorithm has made 100 cycles and hasn't found any optimal solution.";
-        //     default:
-        //         throw new ArgumentOutOfRangeException();
-        // }
+            var minRatio = float.MaxValue;
+            var minIndex = 0;
+
+            var state = false;
+
+            for (var j = 1; j < table.Count; j++)
+            {
+                if (table[j][index] > 0)
+                {
+                    // must be >= 0
+                    state = true;
+                    var ratio = table[j][table[0].Count - 1] / table[j][index];
+
+                    if (ratio < minRatio)
+                    {
+                        minRatio = ratio;
+                        minIndex = j;
+                    }
+                }
+            }
+
+            if (!state)
+            {
+                Console.WriteLine("******* Система не имеет ограничений на области допустимых решений *******");
+                break;
+            }
+            else
+            {
+                // Console.WriteLine("************ Итерация № " + iter + " ************");
+                // Console.WriteLine("В базисные переменные переходит : " + rowVariables[index]);
+                // Console.WriteLine("В свободные переменные переходит : " + basicVariables[minIndex]);
+                // Console.WriteLine();
+
+                basicVariables[minIndex] = rowVariables[index]; // swap basic variables...
+
+                RowOperation(index, minIndex); // row operation in table...
+            }
+        }
+    }
+
+
+    public void RowOperation(int index, int minIndex)
+    {
+        var num = table[minIndex][index];
+
+        for (var i = 0; i < table[0].Count; i++)
+        {
+            table[minIndex][i] /= num;
+        }
+
+        for (var i = 0; i < table.Count; i++)
+        {
+            if (i != minIndex)
+            {
+                var cal = -table[i][index];
+
+                for (var j = 0; j < table[0].Count; j++)
+                {
+                    table[i][j] = cal * table[minIndex][j] + table[i][j];
+                }
+            }
+        }
+    }
+
+    private void FillVariables(int n, int m)
+    {
+        basicVariables = new string[m + 1];
+        basicVariables[0] = "c";
+
+        for (var i = 0; i < m; i++)
+        {
+            basicVariables[i + 1] = "s" + (i + 1);
+        }
+
+        rowVariables = new string[n + m + 2];
+        rowVariables[0] = "z";
+        for (var i = 0; i < n; i++)
+        {
+            rowVariables[i + 1] = "x" + (i + 1);
+        }
+
+        for (var i = 0; i < m; i++)
+        {
+            rowVariables[n + i + 1] = "s" + (i + 1);
+        }
+
+        rowVariables[n + m + 1] = "b";
+    }
+
+    private bool IfMinExists()
+    {
+        var state = false;
+
+        for (var i = 0; i < table[0].Count; i++)
+        {
+            if (table[0][i] < 0)
+            {
+                state = true;
+                break;
+            }
+        }
+
+        return state;
+    }
+
+    private int MinIndex()
+    {
+        var index = 0;
+        var min = float.MaxValue;
+
+        for (var i = 0; i < table[0].Count; i++)
+        {
+            if (table[0][i] < min)
+            {
+                index = i;
+                min = table[0][i];
+            }
+        }
+
+        return index;
     }
 }

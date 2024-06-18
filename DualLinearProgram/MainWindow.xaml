@@ -112,7 +112,7 @@
             </StackPanel>
             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15">
                 <TextBlock Text="Result: " />
-                <TextBlock Text="{Binding Result}" />
+                <TextBlock Text="{Binding DualResult}" />
             </StackPanel>
         </Grid>
     </Grid>
