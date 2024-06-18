@@ -23,8 +23,6 @@ public class SimplexHelper
             table[i] = new List<float>(new float[n + m + 2]);
         }
 
-        table[0][0] = 1;
-        
         var targetFunction = new int[n];
         for (var i = 0; i < n; i++)
         {
@@ -33,7 +31,7 @@ public class SimplexHelper
 
         for (var i = 0; i < targetFunction.Length; i++)
         {
-            table[0][i + 1] = -targetFunction[i];
+            table[0][i + 1] = targetFunction[i];
         }
 
         for (var j = 0; j < m; j++)
@@ -47,7 +45,19 @@ public class SimplexHelper
                 table[j + 1][i + 1] = constraint.Variables[i].Coefficient;
             }
 
-            int choice = constraint.SelectedInequalitySign switch
+            for (var i = 0; i < m; i++)
+            {
+                if (constraints[i].SelectedInequalitySign == ">=")
+                {
+                    table[0][n + i + 1] = problemType ? -1 : 1;
+                }
+                else if (constraints[i].SelectedInequalitySign == "=")
+                {
+                    table[0][n + i + 1] = problemType ? 0 : 1;
+                }
+            }
+
+            var choice = constraint.SelectedInequalitySign switch
             {
                 "<=" => 1,
                 ">=" => 2,
@@ -84,8 +94,8 @@ public class SimplexHelper
         }
         else
         {
-            Console.WriteLine("Значенеи целевой функции Zmin = " + -table[0][table[0].Count - 1]);
-            return -table[0][table[0].Count - 1];
+            Console.WriteLine("Значение целевой функции Zmin = " + table[0][table[0].Count - 1]);
+            return table[0][table[0].Count - 1];
         }
     }
 
@@ -129,6 +139,14 @@ public class SimplexHelper
                 // Console.WriteLine();
 
                 basicVariables[minIndex] = rowVariables[index]; // swap basic variables...
+
+                for (var i = 1; i < basicVariables.Length; i++)
+                {
+                    if (Math.Abs(table[i][index] - 1) < .001f)
+                    {
+                        basicVariables[i] = rowVariables[index];
+                    }
+                }
 
                 RowOperation(index, minIndex); // row operation in table...
             }
@@ -188,11 +206,11 @@ public class SimplexHelper
     {
         var state = false;
 
-        for (int i = 0; i < table[0].Count; i++)
+        for (var i = 1; i < table[0].Count; i++) // начинаем с 1, чтобы пропустить первый столбец
         {
-            if (!problemType)
+            if (problemType)
             {
-                if (table[0][i] > 0)
+                if (table[0][i] > 0) // для максимизации ищем положительные коэффициенты
                 {
                     state = true;
                     break;
@@ -200,7 +218,7 @@ public class SimplexHelper
             }
             else
             {
-                if (table[0][i] < 0)
+                if (table[0][i] < 0) // для минимизации ищем отрицательные коэффициенты
                 {
                     state = true;
                     break;
@@ -216,12 +234,23 @@ public class SimplexHelper
         var index = 0;
         var min = float.MaxValue;
 
-        for (var i = 0; i < table[0].Count; i++)
+        for (var i = 1; i < table[0].Count; i++) // начинаем с 1, чтобы пропустить первый столбец
         {
-            if (table[0][i] < min)
+            if (problemType)
             {
-                index = i;
-                min = table[0][i];
+                if (table[0][i] > 0 && table[0][i] < min) // для максимизации ищем наибольший положительный коэффициент
+                {
+                    index = i;
+                    min = table[0][i];
+                }
+            }
+            else
+            {
+                if (table[0][i] < 0 && table[0][i] < min) // для минимизации ищем наименьший отрицательный коэффициент
+                {
+                    index = i;
+                    min = table[0][i];
+                }
             }
         }
 
