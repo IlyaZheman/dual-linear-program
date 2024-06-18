@@ -27,6 +27,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="85" />
             </Grid.RowDefinitions>
 
             <StackPanel>
@@ -62,7 +63,12 @@
                 </StackPanel>
             </StackPanel>
 
-            <StackPanel Grid.Row="1" HorizontalAlignment="Center" Margin="15">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="15">
+                <TextBlock Text="Result: " />
+                <TextBlock Text="{Binding MainResult}" />
+            </StackPanel>
+
+            <StackPanel Grid.Row="2" HorizontalAlignment="Center" Margin="15">
                 <StackPanel Orientation="Horizontal">
                     <Button Content="Default Max Value"
                             Command="{Binding SetDefaultMaxValueCommand}"
@@ -89,6 +95,7 @@
             <Grid.RowDefinitions>
                 <RowDefinition />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="85" />
             </Grid.RowDefinitions>
 
             <StackPanel Grid.Row="0">

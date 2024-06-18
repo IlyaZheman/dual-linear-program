@@ -27,11 +27,11 @@ public class MainViewModel : ViewModel
     private MainFunction _mainFunction;
     private ObservableCollection<Constraint> _mainConstraints;
     private ObservableCollection<Condition> _mainConditions;
+    private double _mainDualResult;
 
     private MainFunction _dualFunction;
     private ObservableCollection<Constraint> _dualConstraints;
     private ObservableCollection<Condition> _dualConditions;
-
     private double _dualDualResult;
 
     public MainFunction MainFunction
@@ -90,6 +90,16 @@ public class MainViewModel : ViewModel
         set
         {
             _dualConditions = value;
+            OnPropertyChanged();
+        }
+    }
+
+    public double MainResult
+    {
+        get => _mainDualResult;
+        set
+        {
+            _mainDualResult = value;
             OnPropertyChanged();
         }
     }
@@ -188,8 +198,9 @@ public class MainViewModel : ViewModel
         DualConditions = new ObservableCollection<Condition>(dualConditions);
         Console.WriteLine(DualConditions.Verbose());
 
-        var simplex = new SimplexHelper();
-        DualResult = simplex.CalculateResult(MainFunction, MainConstraints.ToList());
+        MainResult = new SimplexHelper().CalculateResult(MainFunction, MainConstraints.ToList());
+        Console.WriteLine(MainResult);
+        DualResult = new SimplexHelper().CalculateResult(DualFunction, DualConstraints.ToList());
         Console.WriteLine(DualResult);
     }
 

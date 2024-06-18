@@ -24,8 +24,8 @@ public class SimplexHelper
         }
 
         table[0][0] = 1;
+        
         var targetFunction = new int[n];
-
         for (var i = 0; i < n; i++)
         {
             targetFunction[i] = problemType ? function.Variables[i].Coefficient : -function.Variables[i].Coefficient;
@@ -188,12 +188,23 @@ public class SimplexHelper
     {
         var state = false;
 
-        for (var i = 0; i < table[0].Count; i++)
+        for (int i = 0; i < table[0].Count; i++)
         {
-            if (table[0][i] < 0)
+            if (!problemType)
             {
-                state = true;
-                break;
+                if (table[0][i] > 0)
+                {
+                    state = true;
+                    break;
+                }
+            }
+            else
+            {
+                if (table[0][i] < 0)
+                {
+                    state = true;
+                    break;
+                }
             }
         }
 
