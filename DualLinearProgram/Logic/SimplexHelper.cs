@@ -5,17 +5,17 @@ namespace DualLinearProgram.Logic;
 public class SimplexHelper
 {
     private List<List<float>> table;
-    private string[] rowVariables; // all variables in a row
-    private string[] basicVariables; // contain basic variables
+    private string[] rowVariables;
+    private string[] basicVariables;
 
-    private bool problemType = false; // Problem Type
+    private bool isMax = false;
 
     public float CalculateResult(MainFunction function, List<Constraint> constraints)
     {
         var n = function.GetVariableCount();
         var m = constraints.Count;
 
-        problemType = function.SelectedOptimizationSign == "max";
+        isMax = function.SelectedOptimizationSign == "max";
 
         table = new(new List<float>[m + 1]);
         for (var i = 0; i < table.Count; i++)
@@ -26,7 +26,7 @@ public class SimplexHelper
         var targetFunction = new int[n];
         for (var i = 0; i < n; i++)
         {
-            targetFunction[i] = problemType ? function.Variables[i].Coefficient : -function.Variables[i].Coefficient;
+            targetFunction[i] = -function.Variables[i].Coefficient;
         }
 
         for (var i = 0; i < targetFunction.Length; i++)
@@ -49,11 +49,11 @@ public class SimplexHelper
             {
                 if (constraints[i].SelectedInequalitySign == ">=")
                 {
-                    table[0][n + i + 1] = problemType ? -1 : 1;
+                    table[0][n + i + 1] = 1;
                 }
                 else if (constraints[i].SelectedInequalitySign == "=")
                 {
-                    table[0][n + i + 1] = problemType ? 0 : 1;
+                    table[0][n + i + 1] = 1;
                 }
             }
 
@@ -87,16 +87,8 @@ public class SimplexHelper
         FillVariables(n, m);
         OptimizeTable();
 
-        if (problemType)
-        {
-            Console.WriteLine("Значение целевой функции Zmax = " + table[0][table[0].Count - 1]);
-            return table[0][table[0].Count - 1];
-        }
-        else
-        {
-            Console.WriteLine("Значение целевой функции Zmin = " + table[0][table[0].Count - 1]);
-            return table[0][table[0].Count - 1];
-        }
+        Console.WriteLine("Значение целевой функции Zmin = " + table[0][table[0].Count - 1]);
+        return table[0][table[0].Count - 1];
     }
 
     private void OptimizeTable()
@@ -154,7 +146,7 @@ public class SimplexHelper
     }
 
 
-    public void RowOperation(int index, int minIndex)
+    private void RowOperation(int index, int minIndex)
     {
         var num = table[minIndex][index];
 
@@ -206,23 +198,12 @@ public class SimplexHelper
     {
         var state = false;
 
-        for (var i = 1; i < table[0].Count; i++) // начинаем с 1, чтобы пропустить первый столбец
+        for (var i = 1; i < table[0].Count; i++)
         {
-            if (problemType)
+            if (table[0][i] < 0) // для минимизации ищем отрицательные коэффициенты
             {
-                if (table[0][i] > 0) // для максимизации ищем положительные коэффициенты
-                {
-                    state = true;
-                    break;
-                }
-            }
-            else
-            {
-                if (table[0][i] < 0) // для минимизации ищем отрицательные коэффициенты
-                {
-                    state = true;
-                    break;
-                }
+                state = true;
+                break;
             }
         }
 
@@ -234,23 +215,12 @@ public class SimplexHelper
         var index = 0;
         var min = float.MaxValue;
 
-        for (var i = 1; i < table[0].Count; i++) // начинаем с 1, чтобы пропустить первый столбец
+        for (var i = 1; i < table[0].Count; i++)
         {
-            if (problemType)
+            if (table[0][i] < 0 && table[0][i] < min) // для минимизации ищем наименьший отрицательный коэффициент
             {
-                if (table[0][i] > 0 && table[0][i] < min) // для максимизации ищем наибольший положительный коэффициент
-                {
-                    index = i;
-                    min = table[0][i];
-                }
-            }
-            else
-            {
-                if (table[0][i] < 0 && table[0][i] < min) // для минимизации ищем наименьший отрицательный коэффициент
-                {
-                    index = i;
-                    min = table[0][i];
-                }
+                index = i;
+                min = table[0][i];
             }
         }
 
